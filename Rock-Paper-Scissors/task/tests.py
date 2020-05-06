@@ -8,26 +8,34 @@ CheckResult.wrong = lambda feedback: CheckResult(False, feedback)
 class RPSTest(StageTest):
     def generate(self) -> List[TestCase]:
         self.options = ["rock", "paper", "scissors"]
-        cases = ["rock\npaper\npaper\nscissors\nblabla\n!exit",
-                 "rock\ninvalid\n!exit",
-                 "rock\nrock\nrock\nrock\n!exit"] * 10
-        return [TestCase(stdin=case, attach=case) for case in cases]
+        cases = ["Tim\nrock\npaper\npaper\nrokc\n!rating\n!exit",
+                 "Tim\nrock\npeper\n!exit",
+                 "Tim\nrock\nrock\nrock\nrock\n!exit"] * 10
+        return [TestCase(stdin=case, attach=case, files={'rating.txt': 'Bob 350\nJane 200\nAlex 400'})
+                for case in cases]
 
     def check(self, reply: str, attach) -> CheckResult:
-
-        reply = reply.split("\n")[:-1]
-        reply = [rep for rep in reply if len(rep.strip()) != 0]
-
-        attaches = attach.split('\n')[:-1]
+        reply = [r for r in reply.split("\n") if len(r) != 0]
+        # reply = reply["Enter" in reply[0]:]
+        attach = attach.split("\n")
+        rating = 0
 
         if len(reply) == 0:
             return CheckResult.wrong(
                 "Looks like you didn't output anything!"
             )
 
-        for reply_part, attach_part in zip(reply, attaches):
+        for rep in range(len(reply)):
+            reply_part = reply[rep]
             try:
-                if "Sorry" in reply_part:
+                attach_part = attach[rep]
+                if attach_part == "!exit" or "Hello" in reply_part:
+                    continue
+                if attach_part == "!rating":
+                    if reply_part.split(":")[-1].strip() != str(rating):
+                        return CheckResult.wrong("User rating is wrong :(")
+                    continue
+                elif "Sorry" in reply_part:
                     result = -1
                     option = reply_part.split()[-1]
                 elif "draw" in reply_part:
@@ -39,9 +47,11 @@ class RPSTest(StageTest):
                     start = reply_part.index('(')
                     end = reply_part.index(')')
                     option = reply_part[start + 1: end]
+                    rating += 50
                 elif "Well" in reply_part:
                     result = 1
                     option = reply_part.split()[-3]
+                    rating += 100
                 elif "Invalid input" in reply_part:
                     result = 2
                     if attach_part in self.options:
@@ -52,7 +62,7 @@ class RPSTest(StageTest):
                 else:
                     raise IndexError
 
-                if attach_part not in ['!exit'] + self.options:
+                if attach_part not in self.options:
                     if result == 2:
                         res = True
                     else:
@@ -60,11 +70,7 @@ class RPSTest(StageTest):
                             "Looks like you didn't handle an invalid input correctly"
                         )
                 else:
-                    res = self.solve(
-                        result,
-                        attach_part.strip(),
-                        option.strip()
-                    )
+                    res = self.solve(result, attach_part.strip(), option.strip())
 
                 if res is False:
                     return CheckResult.wrong(
@@ -73,12 +79,12 @@ class RPSTest(StageTest):
                         'And the answer was \"' + reply_part + '\". '
                         'That\'s wrong reply'
                     )
+
                 if res < 0:
                     raise IndexError
             except IndexError:
-                return CheckResult.wrong(
-                    "Seems like your answer (\"{}\") "
-                    "does not fit in given templates".format(reply_part))
+                return CheckResult.wrong("Seems like your answer (\"{}\") does not fit in given templates".format(reply_part))
+
         return CheckResult.correct()
 
     def solve(self, result, *options):
@@ -91,6 +97,6 @@ class RPSTest(StageTest):
             true_result = (-1) ** ((abs(diff) - (len(self.options) // 2) > 0) == (diff > 0))
         return true_result == result
 
-
 if __name__ == '__main__':
+
     RPSTest("rps.game").run_tests()
