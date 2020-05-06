@@ -55,6 +55,16 @@ files:
 
     RPSTest("rps.game").run_tests()
   learner_created: false
+- name: rps/game.py
+  visible: true
+  text: |
+    # Write your code here
+    to_win = {"rock": "paper", "paper": "scissors", "scissors": "rock"}
+
+    user = input()
+
+    print("Sorry, but computer chose " + to_win[user])
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/78/stages/432/implement
-status: Unchecked
+status: Solved
 record: -1
