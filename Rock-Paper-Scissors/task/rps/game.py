@@ -1,23 +1,24 @@
 import random
 
-# Write your code here
-
-to_win = {"rock": "paper", "paper": "scissors", "scissors": "rock"}
-key_list = list(to_win.keys())
-
 name = input("Enter your name: ")
 print("Hello, " + name)
 
 score = 0
-
 with open('rating.txt') as infile:
     for line in infile.readlines():
         line_list = line.split()
-        if line[0] == name:
-            score = int(line[1])
+        if line_list[0] == name:
+            score = int(line_list[1])
+            break
 
+options = "rock,paper,scissors".split(',')
+options_input = input()
+if len(options_input) > 0:
+    options = options_input.split(',')
+
+print("Okay, let's start")
 while True:
-    computer = key_list[random.randint(0, 2)]
+    computer = options[random.randint(0, len(options) - 1)]
     user = input()
 
     if user == "!exit":
@@ -26,13 +27,22 @@ while True:
 
     if user == "!rating":
         print("Your rating: {}".format(score))
-    elif user not in key_list:
+        continue
+
+    if user not in options:
         print("Invalid input")
-    elif to_win[user] == computer:
-        print("Sorry, but computer chose " + computer)
-    elif user == computer:
+        continue
+
+    comp_idx = options.index(computer)
+    user_idx = options.index(user)
+    if user_idx > comp_idx:
+        user_idx -= len(options)
+
+    if user == computer:
         print("There is a draw (" + computer + ")")
         score += 50
+    elif comp_idx - user_idx <= len(options) // 2:
+        print("Sorry, but computer chose " + computer)
     else:
         print("Well done. Computer chose " + computer + " and failed")
         score += 100

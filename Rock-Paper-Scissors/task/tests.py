@@ -7,29 +7,40 @@ CheckResult.wrong = lambda feedback: CheckResult(False, feedback)
 
 class RPSTest(StageTest):
     def generate(self) -> List[TestCase]:
-        self.options = ["rock", "paper", "scissors"]
-        cases = ["Tim\nrock\npaper\npaper\nrokc\n!rating\n!exit",
-                 "Tim\nrock\npeper\n!exit",
-                 "Tim\nrock\nrock\nrock\nrock\n!exit"] * 10
-        return [TestCase(stdin=case, attach=case, files={'rating.txt': 'Bob 350\nJane 200\nAlex 400'})
+        cases = ["Tim\nrock,gun,lightning,devil,dragon,water,air,paper,sponge,wolf,tree,human,snake,scissors,fire\nrock\npaper\npaper\n!rating\n!exit",
+                 "Tim\nrock,paper,scissors\nrock\n!exit",
+                 "Tim\nrock,gun,lightning,devil,dragon,water,air,paper,sponge,wolf,tree,human,snake,scissors,fire\nrock\nrock\nrock\nrock\n!exit",
+                 "Tim\n\nrock\nrock\nrock\navada_kedavra\nrock\n!exit",
+                 "Tim\n1,2,3,4,5\n1\n1\n2\n3\n4\n5\n!exit"]
+        return [TestCase(stdin=case, attach=case, files={'rating.txt': 'Tim 1350\nJane 200\nAlex 400'})
                 for case in cases]
 
     def check(self, reply: str, attach) -> CheckResult:
+
+        if "Okay" not in reply:
+            return CheckResult.wrong(
+                "There is no \"Okay, let's start\" message in this test"
+            )
+
         reply = [r for r in reply.split("\n") if len(r) != 0]
-        # reply = reply["Enter" in reply[0]:]
         attach = attach.split("\n")
-        rating = 0
 
         if len(reply) == 0:
             return CheckResult.wrong(
                 "Looks like you didn't output anything!"
             )
 
+
+
+        rating = 1350
+        self.options = (attach[1] or "rock,paper,scissors").split(",")
         for rep in range(len(reply)):
             reply_part = reply[rep]
             try:
                 attach_part = attach[rep]
-                if attach_part == "!exit" or "Hello" in reply_part:
+                if attach_part == "!exit" or \
+                        "Hello" in reply_part or \
+                        "Okay" in reply_part or "Bye!" in reply_part:
                     continue
                 if attach_part == "!rating":
                     if reply_part.split(":")[-1].strip() != str(rating):
@@ -84,7 +95,6 @@ class RPSTest(StageTest):
                     raise IndexError
             except IndexError:
                 return CheckResult.wrong("Seems like your answer (\"{}\") does not fit in given templates".format(reply_part))
-
         return CheckResult.correct()
 
     def solve(self, result, *options):
@@ -98,5 +108,4 @@ class RPSTest(StageTest):
         return true_result == result
 
 if __name__ == '__main__':
-
     RPSTest("rps.game").run_tests()
