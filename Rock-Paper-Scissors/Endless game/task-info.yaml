@@ -101,6 +101,24 @@ files:
     if __name__ == '__main__':
         RPSTest("rps.game").run_tests()
   learner_created: false
+- name: rps/game.py
+  visible: true
+  text: |
+    import random
+
+    # Write your code here
+
+    to_win = {"rock": "paper", "paper": "scissors", "scissors": "rock"}
+    key_list = list(to_win.keys())
+    computer = key_list[random.randint(0, 2)]
+    user = input()
+    if to_win[user] == computer:
+        print("Sorry, but computer chose " + computer)
+    elif user == computer:
+        print("There is a draw (" + user + ")")
+    else:
+        print("Well done. Computer chose " + computer + " and failed")
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/78/stages/433/implement
-status: Unchecked
+status: Solved
 record: -1
